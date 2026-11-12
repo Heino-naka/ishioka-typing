@@ -383,6 +383,19 @@ body{background:linear-gradient(180deg,#5b4f8f 0%,#9b6f9a 40%,#F28C5B 74%,#FBD38
 .scene img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 62%}
 .hero h1 small{letter-spacing:.2em}
 @media (prefers-reduced-motion:reduce){.lrow .lt,.dparade .dz,.dparade .dl,.paku .pk,.paku b{animation-duration:.01s!important;animation-delay:0s!important}.scene .glowg,.scene .tw{animation:none}}
+
+/* ---- れんしゅう ---- */
+.pracPanel{max-width:760px;margin:0 auto;text-align:center}
+.pracLab{font-weight:700;font-size:clamp(16px,1.7vw,22px);margin:14px 0 8px}
+.pracRow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pbtn{border:3px solid #cfc3e6;background:#fff;color:var(--ink);border-radius:16px;padding:12px 6px;font:inherit;font-weight:700;font-size:clamp(16px,1.8vw,24px);cursor:pointer}
+.pbtn small{display:block;font-weight:400;font-size:.62em;color:var(--ink2);margin-top:2px}
+.pbtn.sel{border-color:#e0621a;background:#fff2e0;box-shadow:0 0 0 3px rgba(224,98,26,.25)}
+.pracNote{color:var(--ink2);margin:14px 0 12px;line-height:1.7}
+#game.practice .timebar,#game.practice .hud .sc,#game.practice .combo{display:none}
+#game.practice .tleft{min-width:0;text-align:left}
+.oyaTxt h3{margin:14px 0 4px;font-size:1.05em}
+.oyaTxt p{margin:0;line-height:1.8}
 </style>
 </head>
 <body>
@@ -414,6 +427,7 @@ body{background:linear-gradient(180deg,#5b4f8f 0%,#9b6f9a 40%,#F28C5B 74%,#FBD38
         <button class="btn sub2" id="howBtn">❓ あそびかた</button>
         <button class="btn sub2" id="certBtn">📜 証書</button>
         <a class="btn sub2" href="https://heino-naka.github.io/ibaraki-typing-map/" style="grid-column:1/-1;text-decoration:none">🗺️ いばらきタイピング探検MAP</a>
+        <button class="btn sub2 small" id="oyaBtn" style="grid-column:1/-1">👪 おうちの人・先生へ</button>
       </div>
     </div>
   </div>
@@ -425,7 +439,40 @@ body{background:linear-gradient(180deg,#5b4f8f 0%,#9b6f9a 40%,#F28C5B 74%,#FBD38
 <section class="screen" id="coursesScr">
   <h2 class="scrTitle">コースを えらぼう</h2>
   <div class="courseRow" id="courseList"></div>
-  <div class="row" style="justify-content:center"><button class="btn sub2" data-go="title">← もどる</button></div>
+  <div class="row" style="justify-content:center"><button class="btn sub2" data-go="title">← もどる</button><button class="btn blue" data-go="practiceScr">✏️ れんしゅう</button></div>
+</section>
+
+<!-- れんしゅう えらび -->
+<section class="screen" id="practiceScr">
+  <h2 class="scrTitle">✏️ れんしゅう</h2>
+  <div class="panel pracPanel">
+    <p class="pracLab">① コースを えらぼう</p>
+    <div class="pracRow" id="pracCourse"></div>
+    <p class="pracLab">② ことばの かずを えらぼう</p>
+    <div class="pracRow" id="pracCount"></div>
+    <p class="pracNote">じかんは はかりません。てんすうも つかないよ。<br>ゆっくり せいかくに うとう！</p>
+    <button class="btn big" id="pracStart">▶ スタート</button>
+    <div class="row" style="justify-content:center;margin-top:12px"><button class="btn sub2" data-go="coursesScr">← もどる</button></div>
+  </div>
+</section>
+
+<!-- れんしゅう けっか -->
+<section class="screen" id="practiceRes">
+  <div class="panel pracPanel">
+    <h2 style="margin:0 0 4px">れんしゅう おわり！</h2>
+    <p id="prCourse" style="color:var(--ink2);margin:0 0 12px"></p>
+    <div class="stats">
+      <div>うった ことば<b id="prWords">0</b></div>
+      <div>せいかく さ<b id="prAcc">0%</b></div>
+      <div>かかった じかん<b id="prTime">0</b></div>
+    </div>
+    <p id="prMsg" style="font-weight:700;font-size:clamp(18px,2vw,26px);margin:12px 0 16px"></p>
+    <div class="menu">
+      <button class="btn" id="prAgain">🔁 もういちど</button>
+      <button class="btn blue" data-go="practiceScr">📋 コースを えらびなおす</button>
+    </div>
+    <div class="row" style="justify-content:center;margin-top:10px"><button class="btn sub2" data-go="title">🏠 タイトルへ</button></div>
+  </div>
 </section>
 
 <!-- ゲーム -->
@@ -1309,7 +1356,7 @@ let IS_TOUCH=window.matchMedia&&matchMedia('(pointer:coarse)').matches; // タ�
 if(IS_TOUCH) document.documentElement.classList.add('touch');
 function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));
-  if(id==='title') renderTitle(); if(id==='coursesScr') renderCourses(); if(id==='gacha') renderGacha(); if(id==='zukan') renderZukan(); if(id==='cert') renderCert();
+  if(id==='practiceScr') renderPractice(); if(id==='title') renderTitle(); if(id==='coursesScr') renderCourses(); if(id==='gacha') renderGacha(); if(id==='zukan') renderZukan(); if(id==='cert') renderCert();
   window.scrollTo(0,0);
 }
 document.addEventListener('click',e=>{
@@ -1347,7 +1394,14 @@ $('howBtn').onclick=()=>openModal(`<h2>❓ あそびかた</h2><ol class="howto"
   <li>じかんは 60びょう。<b>はやさより せいかく</b>が だいじ！ ミスしないで うつと てんすうが おおきくなるよ。</li>
   <li>せいかくさが <b>80%・90%・95%</b>を こえると ボーナス。<b>ミス0</b>なら <b>パーフェクト</b>で ボーナスが いちばん おおきいよ！</li>
   <li>てんすうで <b>称号</b>が もらえる。ちょうちんを ためて <b>ガチャ</b>を まわし、ふるさとカードを ぜんぶ あつめよう！ おまつりの 44の 町内の カードを ぜんぶ あつめると <b>証書</b>が もらえるよ。</li>
+  <li><b>れんしゅう</b>は じかんなし。「コースを えらぶ」の がめんから あそべるよ。てんすうは つかないから、ゆっくり うってみよう。</li>
   </ol><div class="row" style="justify-content:center"><button class="btn" onclick="closeModal()">わかった！</button></div>`);
+$('oyaBtn').onclick=()=>openModal(`<div class="oyaTxt"><h2>👪 おうちの人・先生へ</h2>
+  <h3>このゲームについて</h3><p>石岡市の言葉（地名・学校・名所・おまつりなど）をローマ字で打ちながら、「ふるさとカード」を集めるタイピングゲームです。画面の中で終わらず、実際の町へ出かけたくなることをねらっています。</p>
+  <h3>遊び方の目安</h3><p>本編は60秒です。速さよりも正確さを大切にした得点になっています。まだ打つのがむずかしいこどもは、「コースを選択する」の中の「れんしゅう」から始めると、時間を気にせずに練習できます（10・20・30語から選べます）。練習では、得点・ちょうちん・カードは変わりません。</p>
+  <h3>記録について</h3><p>得点・ちょうちん・カードは、いま使っているパソコン（Chromebook）のブラウザの中だけに保存され、外部には送信されません。同じパソコンを何人かで使うと記録が混ざること、ブラウザのデータを消すと記録も消えることにご注意ください。</p>
+  <h3>掲載している名前について</h3><p>学校・園・施設などの名前は、公式の名称を使っています。評価や比較を目的にした表示はしていません。内容でお気づきのことがあれば、作者（へいなか）までお知らせください。</p>
+  <div class="row" style="justify-content:center;margin-top:14px"><button class="btn" onclick="closeModal()">とじる</button></div></div>`);
 $('certBtn').onclick=()=>show('cert');
 function openModal(h){SE.page();$('modalBody').innerHTML=h;$('modal').classList.add('on')}
 function closeModal(){$('modal').classList.remove('on')}
@@ -1369,6 +1423,7 @@ const EASY_N=25;
 function easyPool(){return WORDS.filter(w=>w.lv===1||(w.lv===2&&w.r.length<=4))} // かんたん：みじかい ことば
 function buildDeck(lv){return lv===1?shuffle(easyPool()).slice(0,EASY_N):shuffle(WORDS.filter(w=>w.lv===lv))}
 function startGame(lv){
+  if($('game').classList.contains('practice')){$('game').classList.remove('practice');$('tleft').textContent=GAME_SEC;$('tbar').style.width='100%'}
   ac(); const hid=$('hid'); hid.value=''; if(IS_TOUCH) hid.focus(); else hid.blur();
   G={lv,score:0,combo:0,maxCombo:0,ok:0,ng:0,words:[],deck:buildDeck(lv),di:0,m:null,w:null,miss:false,t0:0,left:GAME_SEC};
   show('game'); state='count'; nextWord(); updHud();
@@ -1390,6 +1445,7 @@ const REPEAT_P={1:0.3,2:0.2,3:0.15}; // むずかしいは すこし ひかえ�
 const LOWER_P=0.1; // うえの コースでも 1わりくらいは したの コースの ことばが でる
 function lowerPool(lv){return lv===2?WORDS.filter(w=>w.lv===1):lv===3?WORDS.filter(w=>w.lv===1||w.lv===2):[]} // ときどき まえに でた ことばが もどってくる
 function nextWord(){
+  if(G.practice){const w=G.deck[G.di++]; G.w=w; G.prev=w; G.m=makeMatcher(w.r); G.miss=false; renderWord(); return} // れんしゅう：じゅんばんに でる
   const pickFrom=pool=>{const c=pool.filter(w=>w!==G.prev);return c.length?c[Math.random()*c.length|0]:null};
   let w=null;
   if(G.words.length>=3&&Math.random()<REPEAT_P[G.lv]) w=pickFrom(G.words.slice(-12)); // まえに でた ことば
@@ -1422,8 +1478,9 @@ function fitWord(){
 window.addEventListener('resize',()=>{if(G&&G.w&&$('game').classList.contains('on'))fitWord()});
 function updHud(){
   $('score').textContent=G.score;
-  $('combo').textContent=G.combo>=5?G.combo+' コンボ！'+(G.combo>=20?' ×'+Math.min(4,1+Math.floor(G.combo/20)):''):'';
-  $('combo').classList.toggle('big',G.combo>=20);
+  if(G.practice){$('tleft').textContent=Math.min(G.words.length+1,G.total)+' / '+G.total;return} // れんしゅう：すすみぐあいだけ
+  $('combo').textContent=G.combo>=5?G.combo+' コンボ！'+(G.combo>=25?' ×'+Math.min(3,1+Math.floor(G.combo/25)):''):'';
+  $('combo').classList.toggle('big',G.combo>=25);
 }
 function flash(t,c){const f=$('flash');f.textContent=t;f.style.color=c||'var(--ok)';f.classList.remove('go');void f.offsetWidth;f.classList.add('go')}
 function handleChar(ch){
@@ -1431,10 +1488,11 @@ function handleChar(ch){
   ch=ch.replace(/[\uff01-\uff5e]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xfee0)).replace(/ー/,'-');
   if(!/^[a-zA-Z0-9?!\-]$/.test(ch)) return;
   if(press(G.m,ch)){
-    G.score+=keyPoint(G.combo,G.lv); G.combo++; G.ok++; G.maxCombo=Math.max(G.maxCombo,G.combo); SE.key(G.combo); if([10,25,50,100,150,200].includes(G.combo)) setTimeout(()=>SE.combo(),60);
+    G.score+=keyPoint(G.combo,G.lv); G.combo++; G.ok++; G.maxCombo=Math.max(G.maxCombo,G.combo); SE.key(G.combo); if(!G.practice&&[10,25,50,100,150,200].includes(G.combo)) setTimeout(()=>SE.combo(),60);
     if(isDone(G.m)){
       const b=wordBonus(G.m,!G.miss,G.lv); G.score+=b; G.words.push(G.w);
-      if(!G.miss){flash('ノーミス！ +'+b,'var(--sun)');SE.perfect()} else {flash('+'+b);SE.word()}
+      if(G.practice){ if(!G.miss){flash('ノーミス！','var(--sun)');SE.perfect()} else SE.word(); if(G.words.length>=G.total){endPractice();return} }
+      else if(!G.miss){flash('ノーミス！ +'+b,'var(--sun)');SE.perfect()} else {flash('+'+b);SE.word()}
       nextWord();
     } else renderWord();
   }else{
@@ -1453,6 +1511,7 @@ function tick(now){
 }
 document.addEventListener('keydown',e=>{
   if($('modal').classList.contains('on')&&e.key==='Escape'){closeModal();return}
+  if($('practiceScr').classList.contains('on')&&state==='idle'&&e.key==='Escape'){show('coursesScr');return}
   if($('coursesScr').classList.contains('on')&&state==='idle'){
     if(e.key==='Escape'){show('title');return}
     if(/^[123]$/.test(e.key)){const c=COURSES[e.key-1]; if(unlocked(c)){ac();SE.select();startGame(c.lv)} else SE.locked(); return}
@@ -1479,7 +1538,7 @@ $('quitBtn').onclick=()=>endGame(true);
 
 function endGame(quit){
   state='idle'; cdTimers.forEach(clearTimeout); $('hid').blur(); $('count').classList.remove('on');
-  if(quit){show('title');return}
+  if(quit){show(G&&G.practice?'practiceScr':'title');return}
   SE.timeup(); setTimeout(()=>SE.end(),700);
   const base=G.score, ab=accBonus(base,G.ok,G.ng); G.score=base+ab.pt;
   const lv=G.lv, sc=G.score, prev=S.best[lv]||0, before=COURSES.map(unlocked);
@@ -1514,6 +1573,32 @@ function bridgeMsg(words){
   return '<span class="bi">'+iconHTML(w)+'</span> '+m+'<br><span style="font-weight:400;font-size:14px">ゲームの次は、町で探検だ。</span>';
 }
 $('againBtn').onclick=()=>{SE.select();startGame(G.lv)};
+
+// ===== れんしゅう（じかんなし・きろくに えいきょうしない） =====
+const PR={lv:1,n:10};
+function renderPractice(){
+  $('pracCourse').innerHTML=COURSES.map(c=>`<button class="pbtn ${PR.lv===c.lv?'sel':''}" data-pl="${c.lv}">${c.name}</button>`).join('');
+  $('pracCount').innerHTML=[10,20,30].map(n=>`<button class="pbtn ${PR.n===n?'sel':''}" data-pn="${n}">${n}こ</button>`).join('');
+}
+$('pracCourse').addEventListener('click',e=>{const b=e.target.closest('[data-pl]'); if(!b) return; PR.lv=+b.dataset.pl; renderPractice()});
+$('pracCount').addEventListener('click',e=>{const b=e.target.closest('[data-pn]'); if(!b) return; PR.n=+b.dataset.pn; renderPractice()});
+$('pracStart').onclick=()=>{ac();SE.select();startPractice(PR.lv,PR.n)};
+$('prAgain').onclick=()=>{ac();SE.select();startPractice(PR.lv,PR.n)};
+function startPractice(lv,n){
+  ac(); const hid=$('hid'); hid.value=''; if(IS_TOUCH) hid.focus(); else hid.blur();
+  const pool=lv===1?easyPool():WORDS.filter(w=>w.lv===lv), deck=shuffle(pool).slice(0,n);
+  G={lv,practice:true,total:deck.length,score:0,combo:0,maxCombo:0,ok:0,ng:0,words:[],deck,di:0,m:null,w:null,miss:false,t0:0,left:GAME_SEC};
+  show('game'); $('game').classList.add('practice'); state='play'; nextWord(); updHud(); G.t0=performance.now();
+}
+function fmtSec(s){return s<60?s+'秒':Math.floor(s/60)+'分 '+(s%60)+'秒'}
+function endPractice(){
+  state='idle'; $('hid').blur(); SE.end();
+  const sec=Math.round((performance.now()-G.t0)/1000), acc=Math.floor(accOf(G.ok,G.ng));
+  $('prCourse').textContent=COURSES[G.lv-1].name+'コース・'+G.total+'こ';
+  $('prWords').textContent=G.words.length; $('prAcc').textContent=acc+'%'; $('prTime').textContent=fmtSec(sec);
+  $('prMsg').textContent=acc>=80?'すごい！ せいかくに うてたよ！':'ゆっくり せいかくに うってみよう！';
+  show('practiceRes');
+}
 
 // ===== ガチャ =====
 function rollCard(){
