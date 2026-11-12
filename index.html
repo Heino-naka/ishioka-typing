@@ -1509,7 +1509,7 @@ function endGame(quit){
 function bridgeMsg(words){
   const pool=words.length?words:WORDS.filter(w=>w.lv===G.lv);
   const w=pool[Math.random()*pool.length|0], nm=w.k;
-  const m={place:`次は本物の「${nm}」に行ってみよう！`,town:(w.cat==='machi'?`おまつりの「${nm}」の町内を、おまつりの日に歩いてみよう！`:`「${nm}」ってどんな町かな？地図で探して、歩いてみよう！`),food:`今度「${nm}」を味わってみよう！`,
+  const m={place:(w.cat==='school'?`「${nm}」は、町のどのあたりにあるかな？地図で見つけてみよう！`:`次は本物の「${nm}」に行ってみよう！`),town:(w.cat==='machi'?`おまつりの「${nm}」の町内を、おまつりの日に歩いてみよう！`:`「${nm}」ってどんな町かな？地図で探して、歩いてみよう！`),food:`今度「${nm}」を味わってみよう！`,
     say:`本物の友だちやお家の人に「${w.k}」と伝えてみよう！`,creature:`本物の「${nm}」を探してみよう！`,thing:`お家の人に「${nm}」の話をしてみよう！`}[w.go];
   return '<span class="bi">'+iconHTML(w)+'</span> '+m+'<br><span style="font-weight:400;font-size:14px">ゲームの次は、町で探検だ。</span>';
 }
